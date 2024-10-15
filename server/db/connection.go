@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -27,6 +28,10 @@ func ConnectDB() *mongo.Database {
 		log.Fatal("Error from MongoDB Connection")
 	}
 	err = client.Ping(context.Background(), nil)
+	if err != nil {
+		log.Fatal("Error from Ping MongoDB Connection")
+	}
+	fmt.Println("Connection established successfully")
 	database := client.Database("golang_entire_db")
 	Db = database
 	return Db
