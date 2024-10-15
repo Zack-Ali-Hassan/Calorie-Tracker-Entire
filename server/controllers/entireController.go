@@ -37,7 +37,20 @@ func GetAllCalorieTracker(c *gin.Context) {
 	c.JSON(http.StatusOK, calorieTrackerEntire)
 }
 func GetCalorieTracker(c *gin.Context) {
-
+	calorieTrackerEntire := models.CalorieTracker{}
+	id := c.Params.ByName("id")
+	object_id, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"msg": "Invalid Id, please try again?"})
+		return
+	}
+	filter := bson.M{"_id": object_id}
+	err = collection.FindOne(context.Background(), filter).Decode(&calorieTrackerEntire)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error fetching calories tracker"})
+		return
+	}
+	c.JSON(http.StatusOK, calorieTrackerEntire)
 }
 func CreateCalorieTracker(c *gin.Context) {
 	calorieTrackerEntire := new(models.CalorieTracker)
@@ -71,13 +84,44 @@ func CreateCalorieTracker(c *gin.Context) {
 
 }
 func UpdateCalorieTracker(c *gin.Context) {
-
+	calorieTrackerEntire := new(models.CalorieTracker)
+	id := c.Params.ByName("id")
+	updated_id, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"msg": "Invalid Id, please try again?"})
+		return
+	}
+	if err := c.ShouldBindJSON(&calorieTrackerEntire); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Error parsing Calorie Tracker"})
+		return
+	}
+	update_fields := bson.M{}
+	if calorieTrackerEntire.Dish != "" {
+		update_fields["dish"] = calorieTrackerEntire.Dish
+	}
+	if calorieTrackerEntire.Fat != 0 {
+		update_fields["fat"] = calorieTrackerEntire.Fat
+	}
+	if calorieTrackerEntire.Ingredients != "" {
+		update_fields["ingredients"] = calorieTrackerEntire.Ingredients
+	}
+	if calorieTrackerEntire.Calories != 0 {
+		update_fields["calories"] = calorieTrackerEntire.Calories
+	}
+	filter := bson.M{"_id": updated_id}
+	update := bson.M{"$set": update_fields}
+	_, err = collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error updating calorie tracking"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": "Updated successfully.."})
 }
 func DeleteCalorieTracker(c *gin.Context) {
 	id := c.Params.ByName("id")
 	deleted_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"msg": "Invalid calorie tracking.."})
+		c.JSON(http.StatusNotFound, gin.H{"msg": "Invalid Id, please try again?"})
 		return
 	}
 	filter := bson.M{"_id": deleted_id}
@@ -86,5 +130,5 @@ func DeleteCalorieTracker(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error deleting calorie tracking"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"msg": "Inseted successfully.."})
+	c.JSON(http.StatusOK, gin.H{"msg": "Deleted successfully.."})
 }
