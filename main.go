@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/zack-ali-hassan/Calorie-Tracker-Entire/server/controllers"
 	"github.com/zack-ali-hassan/Calorie-Tracker-Entire/server/db"
+	"github.com/zack-ali-hassan/Calorie-Tracker-Entire/server/routes"
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"}, // Allowed headers
 		AllowCredentials: true,                                         // Allow credentials like cookies, etc.
 	}))
-
+	routes.SetupRoutes(app)
 	if os.Getenv("ENV") == "production" {
 		app.Static("/", "./frontend/dist")
 	}
