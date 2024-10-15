@@ -23,7 +23,7 @@ func main() {
 	db := db.ConnectDB()
 	controllers.SetCollection(db.Collection("Entire"))
 	app := gin.Default()
-	app.Use(gin.Logger())
+
 	app.RedirectTrailingSlash = false
 	// Use Gin CORS middleware with the desired config
 	app.Use(cors.New(cors.Config{
@@ -32,7 +32,10 @@ func main() {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"}, // Allowed headers
 		AllowCredentials: true,                                         // Allow credentials like cookies, etc.
 	}))
+	app.Use(gin.Logger())
 	routes.SetupRoutes(app)
+	app.SetTrustedProxies([]string{"127.0.0.1"}) // Set trusted proxies as needed
+
 	if os.Getenv("ENV") == "production" {
 		app.Static("/", "./frontend/dist")
 	}
@@ -40,5 +43,5 @@ func main() {
 	if port == "" {
 		port = "6768"
 	}
-	log.Fatal(app.Run(":", port))
+	log.Fatal(app.Run(":" + port))
 }
