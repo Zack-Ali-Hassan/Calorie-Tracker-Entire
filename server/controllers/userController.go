@@ -16,7 +16,26 @@ var userCollection *mongo.Collection
 func SetUserCollection(c *mongo.Collection) {
 	userCollection = c
 }
+func GetAllUsers(c *gin.Context) {
+	user := []models.User{}
+	reslut, err := userCollection.Find(context.Background(), bson.M{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Error getting users"})
+		return
+	}
+	defer reslut.Close(context.Background())
+	for reslut.Next(context.Background()) {
+		sp_user := models.User{}
+		if err := reslut.Decode(&user); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"msg": "Error decoding  users"})
+			return
+		}
+		user = append(user, sp_user)
 
+	}
+
+	c.JSON(http.StatusOK, user)
+}
 func CreateUser(c *gin.Context) {
 	user := new(models.User)
 	if err := c.ShouldBindJSON(user); err != nil {
@@ -37,7 +56,7 @@ func CreateUser(c *gin.Context) {
 	}
 	// Check if user already exists
 	var userExist models.User
-	err := collection.FindOne(context.Background(), bson.M{"email": user.Email}).Decode(&userExist)
+	err := userCollection.FindOne(context.Background(), bson.M{"email": user.Email}).Decode(&userExist)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"msg": "User already exists!.."})
 		return
