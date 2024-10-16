@@ -21,6 +21,7 @@ func main() {
 	}
 	db := db.ConnectDB()
 	controllers.SetCollection(db.Collection("Entire"))
+	controllers.SetUserCollection(db.Collection("Users"))
 	app := gin.Default()
 
 	app.RedirectTrailingSlash = false
@@ -33,6 +34,7 @@ func main() {
 	}))
 	app.Use(gin.Logger())
 	routes.SetupRoutes(app)
+	routes.SetupUserRoutes(app)
 	app.SetTrustedProxies([]string{"127.0.0.1"}) // Set trusted proxies as needed
 
 	if os.Getenv("ENV") == "production" {
