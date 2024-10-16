@@ -26,7 +26,7 @@ func GetAllUsers(c *gin.Context) {
 	defer reslut.Close(context.Background())
 	for reslut.Next(context.Background()) {
 		sp_user := models.User{}
-		if err := reslut.Decode(&user); err != nil {
+		if err := reslut.Decode(&sp_user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": "Error decoding  users"})
 			return
 		}
@@ -57,11 +57,12 @@ func CreateUser(c *gin.Context) {
 	// Check if user already exists
 	var userExist models.User
 	err := userCollection.FindOne(context.Background(), bson.M{"email": user.Email}).Decode(&userExist)
-	if err != nil {
+
+	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{"msg": "User already exists!.."})
 		return
 	}
-	insertData, err := collection.InsertOne(context.Background(), user)
+	insertData, err := userCollection.InsertOne(context.Background(), user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error inserted User"})
 		return
@@ -70,6 +71,32 @@ func CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"msg": "User creating successfully.."})
 
 }
+func UserLogin(c *gin.Context) {
+	var user models.User
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Invalid data"})
+		return
+	}
+
+	// Check if user exists
+	var existingUser models.User
+	err := userCollection.FindOne(context.Background(), bson.M{"email": user.Email}).Decode(&existingUser)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": "User not found"})
+		return
+	}
+
+	// Compare passwords (add password hashing for security)
+	if existingUser.Password != user.Password {
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": "Invalid password, please enter a valid password."})
+		return
+	}
+
+	token := "sas-sa-sas"
+
+	c.JSON(http.StatusOK, gin.H{"msg": "Login successful", "token": token})
+}
+
 func UpdateUser(c *gin.Context) {
 	// updateUser := new(models.User)
 	// id := c.Params.ByName("id")
