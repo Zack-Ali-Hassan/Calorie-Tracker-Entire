@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
+import toast from "react-hot-toast";
 const API_URL =
   import.meta.env.MODE == "development" ? "http://localhost:6767/api" : "/api";
 const Login = () => {
@@ -7,23 +9,25 @@ const Login = () => {
     email: "",
     password: "",
   });
-
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // try {
-    //   const response = await axios.post(API_URL + "/login/", formData);
-    //   console.log(response.data);
-    //   toast.success(response.data.msg);
-    //   // Store the token in local storage for future requests
-    //   localStorage.setItem("token", response.data.token);
-    // } catch (error) {
-    //   console.error("Error logging in", error);
-    //   toast.error("Login error");
-    // }
+    try {
+      const response = await axios.post(API_URL + "/user/login/", formData);
+      console.log(response.data.msg);
+      toast.success(response.data.msg);
+      // Store the token in local storage for future requests
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("username", response.data.data.username);
+      navigate("/")
+    } catch (error) {
+      console.error("Error logging in", error);
+      toast.error(error.response.data.msg);
+    }
   };
 
   return (

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
+import toast from "react-hot-toast";
 const API_URL =
   import.meta.env.MODE == "development" ? "http://localhost:6767/api" : "/api";
 const Signup = () => {
@@ -8,6 +10,7 @@ const Signup = () => {
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -15,15 +18,15 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // try {
-    //   const response = await axios.post(API_URL+"/signup/", formData);
-      
-    //   console.log(response.data);
-    //   toast.success(response.data.msg);
-    // } catch (error) {
-    //   console.error("Error signing up", error);
-    //   toast.error("Signing up error")
-    // }
+    try {
+      const response = await axios.post(API_URL+"/user/", formData);
+      console.log(response.data);
+      toast.success(response.data.msg);
+      navigate("/login")
+    } catch (error) {
+      console.error("Error signing up", error.response.data);
+      toast.error(error.response.data.msg)
+    }
   };
 
   return (

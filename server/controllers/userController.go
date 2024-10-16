@@ -94,7 +94,7 @@ func UserLogin(c *gin.Context) {
 
 	token := "sas-sa-sas"
 
-	c.JSON(http.StatusOK, gin.H{"msg": "Login successful", "token": token})
+	c.JSON(http.StatusOK, gin.H{"msg": "Login successful", "token": token, "data": existingUser})
 }
 
 func UpdateUser(c *gin.Context) {
